@@ -1,10 +1,10 @@
 extern crate sl;
-extern crate libc;
+extern crate ctrlc;
 extern crate ncurses;
 extern crate getopts;
 
 use getopts::Options;
-use std::env;
+use std::{env,thread,time};
 
 use sl::Train;
 use sl::d51::SL;
@@ -72,11 +72,6 @@ impl Render for C51 {}
 impl Render for Logo {}
 
 fn main() {
-    use libc::signal;
-    use libc::usleep;
-    use libc::SIGINT;
-    use libc::SIG_IGN;
-
     let args: Vec<String> = env::args().collect();
 
     let mut opts = Options::new();
@@ -90,11 +85,9 @@ fn main() {
         Err(f) => panic!(f.to_string()),
     };
 
+    // Ignore SIGINT signal from ctrl-c
+    ctrlc::set_handler(|| ());
     ncurses::initscr();
-    unsafe {
-        signal(SIGINT, SIG_IGN);
-    }
-
     ncurses::nodelay(ncurses::stdscr(), true);
     ncurses::leaveok(ncurses::stdscr(), true);
     ncurses::scrollok(ncurses::stdscr(), false);
@@ -114,9 +107,7 @@ fn main() {
         };
         ncurses::getch();
         ncurses::refresh();
-        unsafe {
-            usleep(40000);
-        }
+        thread::sleep(time::Duration::from_millis(20));
     }
     ncurses::endwin();
 }
