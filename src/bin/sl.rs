@@ -12,8 +12,9 @@ use sl::c51::C51;
 use sl::logo::Logo;
 
 trait Render: Train + Copy {
-    fn render(&self, x: i32, y: i32, cols: i32) {
+    fn render(&self, x: i32) {
         let mut len = 0 as i32;
+        let y = ncurses::LINES() / 2;
         let body_iter = self.body().iter();
         let wheelset_iter = self.wheelset(x as usize).iter();
         let iter = body_iter.chain(wheelset_iter);
@@ -27,7 +28,7 @@ trait Render: Train + Copy {
             if line.len() as i32 > len {
                 len = line.len() as i32;
             }
-            self.render_line((y + offset) - index as i32, x, *line, cols);
+            self.render_line((y + offset) - index as i32, x, *line);
         }
         if let Some(tender) = self.tender() {
             let mut new_len = 0 as i32;
@@ -35,7 +36,7 @@ trait Render: Train + Copy {
                 if len + line.len() as i32 > new_len {
                     new_len = len + line.len() as i32;
                 }
-                self.render_line((y + offset) - index as i32, x + len, *line, cols);
+                self.render_line((y + offset) - index as i32, x + len, *line);
             }
             len = new_len;
         }
@@ -46,15 +47,15 @@ trait Render: Train + Copy {
                     if len + line.len() as i32 > new_len {
                         new_len = len + line.len() as i32;
                     }
-                    self.render_line((y + offset) - index as i32, x + len, *line, cols);
+                    self.render_line((y + offset) - index as i32, x + len, *line);
                 }
                 len = new_len;
             }
         }
     }
 
-    fn render_line(&self, y: i32, x: i32, line: &str, cols: i32) {
-        let paint_len = (cols - x) as usize;
+    fn render_line(&self, y: i32, x: i32, line: &str) {
+        let paint_len = (ncurses::COLS() - x) as usize;
         if paint_len < line.len() {
             ncurses::mvaddstr(y, x, &line[0..paint_len]);
         } else if x < 0 {
@@ -94,16 +95,15 @@ fn main() {
     ncurses::noecho();
     ncurses::curs_set(ncurses::CURSOR_VISIBILITY::CURSOR_INVISIBLE);
 
-    let y = ncurses::LINES() / 2;
     let cols = ncurses::COLS();
     for x in (-85..cols).rev() {
         ncurses::clear();
         if matches.opt_present("l") {
-            Logo.render(x, y, cols)
+            Logo.render(x)
         } else if matches.opt_present("c") {
-            C51.render(x, y, cols)
+            C51.render(x)
         } else {
-            SL.render(x, y, cols)
+            SL.render(x)
         };
         ncurses::getch();
         ncurses::refresh();
