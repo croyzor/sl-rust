@@ -93,28 +93,28 @@ fn main() {
     ncurses::initscr();
     unsafe {
         signal(SIGINT, SIG_IGN);
-        ncurses::nodelay(ncurses::stdscr, true);
-        ncurses::leaveok(ncurses::stdscr, true);
-        ncurses::scrollok(ncurses::stdscr, false);
     }
 
+    ncurses::nodelay(ncurses::stdscr(), true);
+    ncurses::leaveok(ncurses::stdscr(), true);
+    ncurses::scrollok(ncurses::stdscr(), false);
     ncurses::noecho();
     ncurses::curs_set(ncurses::CURSOR_VISIBILITY::CURSOR_INVISIBLE);
 
-    unsafe {
-        let y = ncurses::LINES / 2;
-        let cols = ncurses::COLS;
-        for x in (-85..cols).rev() {
-            ncurses::clear();
-            if matches.opt_present("l") {
-                Logo.render(x, y, cols)
-            } else if matches.opt_present("c") {
-                C51.render(x, y, cols)
-            } else {
-                SL.render(x, y, cols)
-            };
-            ncurses::getch();
-            ncurses::refresh();
+    let y = ncurses::LINES() / 2;
+    let cols = ncurses::COLS();
+    for x in (-85..cols).rev() {
+        ncurses::clear();
+        if matches.opt_present("l") {
+            Logo.render(x, y, cols)
+        } else if matches.opt_present("c") {
+            C51.render(x, y, cols)
+        } else {
+            SL.render(x, y, cols)
+        };
+        ncurses::getch();
+        ncurses::refresh();
+        unsafe {
             usleep(40000);
         }
     }
